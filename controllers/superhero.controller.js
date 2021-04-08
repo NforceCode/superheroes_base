@@ -1,4 +1,4 @@
-const { Superhero } = require('../models');
+const { Superhero, SuperheroImage } = require('../models');
 const createError = require('http-errors');
 
 module.exports.createSuperhero = async (req, res, next) => {
@@ -93,20 +93,19 @@ module.exports.deleteSuperhero = async (req, res, next) => {
   }
 };
 
-module.exports.addHeroImage = async (req, res, next) => {
+module.exports.addHeroWithImage = async(req, res, next) => {
   try {
     const {
-      file: { filename },
-      params: { id }
-    } = req;
+      body,
+      file: {filename}
+     } =req;
 
-    const superhero = await Superhero.findByPk(id);
+     const newHero = await Superhero.create(body);
+     if(!newHero) {
+       return(next(createError(404, "Hero not created")));
+     }
 
-    if (!superhero) {
-      return next(createError(404));
-    }
-
-    const image = await superhero.createSuperheroImage({
+     const image = await newHero.createSuperheroImage({
       address: filename
     });
 
@@ -114,7 +113,34 @@ module.exports.addHeroImage = async (req, res, next) => {
       return next(createError(404, 'Error while creating image'));
     }
 
-    res.status(200).send({data: image});
+     res.send({data: {hero: newHero, image}});
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports.addHeroWithImages = async(req, res, next) => {
+  try {
+    const {
+      body,
+      files
+     } =req;
+
+     const newHero = await Superhero.create(body);
+     if(!newHero) {
+       return(next(createError(404, "Hero not created")));
+     }
+
+     const imageNames = files.map(file => {return {address: file.filename, heroId: newHero.id}});
+     console.log(imageNames);
+
+     const images = await SuperheroImage.bulkCreate(imageNames);
+
+    if (!images) {
+      return next(createError(404, 'Error while creating image'));
+    }
+
+     res.send({data: {hero: newHero, images}});
   } catch (err) {
     next(err);
   }
