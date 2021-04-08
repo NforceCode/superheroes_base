@@ -4,10 +4,11 @@ const HeroController = require('../controllers/superhero.controller');
 const pagination = require('../middlewares/pagination.mw');
 const path = require('path');
 const multer = require('multer');
+const {STATIC_IMAGES_PATH} = require('../config');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.resolve(__dirname, '../public/images'));
+    cb(null, STATIC_IMAGES_PATH);
   },
   filename: (req, file, cb) => {
     cb(null, `${Date.now()}.${file.originalname}`);
