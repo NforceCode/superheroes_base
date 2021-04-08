@@ -40,5 +40,5 @@ module.exports = {
     await queryInterface.bulkInsert('superheroes', heroesWeDeserve, {}),
 
   down: async (queryInterface, Sequelize) =>
-    await queryInterface.bulkDelete('People', heroesWeDeserve, {})
+    await queryInterface.bulkDelete('superheroes', heroesWeDeserve, {})
 };
