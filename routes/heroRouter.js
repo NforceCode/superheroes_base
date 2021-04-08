@@ -1,23 +1,7 @@
 const {Router}= require('express');
-const { Model } = require('sequelize');
 const HeroController = require('../controllers/superhero.controller');
 const pagination = require('../middlewares/pagination.mw');
-const path = require('path');
-const multer = require('multer');
-const {STATIC_IMAGES_PATH} = require('../config');
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, STATIC_IMAGES_PATH);
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}.${file.originalname}`);
-  }
-});
-
-const upload = multer({storage});
-
-
+const upload = require('../middlewares/multer.mw');
 const heroRouter = Router();
 
 heroRouter.post('/', HeroController.createSuperhero);
@@ -26,6 +10,7 @@ heroRouter.get('/:id', HeroController.getSuperhero);
 heroRouter.patch('/:id', HeroController.updateSuperhero);
 heroRouter.delete('/:id', HeroController.deleteSuperhero);
 
-heroRouter.post('/:id/image',upload.single('image'), HeroController.addHeroImage);
+heroRouter.post('/withimage/',upload.single('image'), HeroController.addHeroWithImage);
+heroRouter.post('/withimages/',upload.array('images', 5), HeroController.addHeroWithImages);
 
 module.exports = heroRouter;
