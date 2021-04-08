@@ -1,5 +1,7 @@
 'use strict';
 
+const { Op } = require('sequelize');
+
 const heroesWeDeserve = [
   {
     nickname: "SuperTester",
@@ -40,5 +42,7 @@ module.exports = {
     await queryInterface.bulkInsert('superheroes', heroesWeDeserve, {}),
 
   down: async (queryInterface, Sequelize) =>
-    await queryInterface.bulkDelete('superheroes', heroesWeDeserve, {})
+    await queryInterface.bulkDelete('superheroes', {
+      nickname : {[Op.in] : heroesWeDeserve.map(hero => hero.nickname)}
+    }, {})
 };
