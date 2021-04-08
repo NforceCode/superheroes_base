@@ -8,7 +8,7 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      heroId :{
+      heroId: {
         field: 'hero_id',
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -24,10 +24,12 @@ module.exports = {
         type: Sequelize.STRING
       },
       createdAt: {
+        field: 'created_at',
         allowNull: false,
         type: Sequelize.DATE
       },
       updatedAt: {
+        field: 'updated_at',
         allowNull: false,
         type: Sequelize.DATE
       }
