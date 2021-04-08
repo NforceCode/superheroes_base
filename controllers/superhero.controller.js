@@ -87,7 +87,34 @@ module.exports.deleteSuperhero = async (req, res, next) => {
       return next(createError(404, 'Error while deleting Superhero'));
     }
 
-    res.status(200).send("Deleted");
+    res.status(200).send('Deleted');
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports.addHeroImage = async (req, res, next) => {
+  try {
+    const {
+      file: { filename },
+      params: { id }
+    } = req;
+
+    const superhero = await Superhero.findByPk(id);
+
+    if (!superhero) {
+      return next(createError(404));
+    }
+
+    const image = await superhero.createSuperheroImage({
+      address: filename
+    });
+
+    if (!image) {
+      return next(createError(404, 'Error while creating image'));
+    }
+
+    res.status(200).send({data: image});
   } catch (err) {
     next(err);
   }
