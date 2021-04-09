@@ -2,7 +2,7 @@
   "name": "superheroes-base",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "private": true,
   "scripts": {
     "start": "nodemon ./server.js"
   },
