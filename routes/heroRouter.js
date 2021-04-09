@@ -12,5 +12,6 @@ heroRouter.delete('/:id', HeroController.deleteSuperhero);
 
 heroRouter.post('/withimage/',upload.single('image'), HeroController.addHeroWithImage);
 heroRouter.post('/withimages/',upload.array('images', 5), HeroController.addHeroWithImages);
+heroRouter.post('/withall/',upload.array('images', 10), HeroController.createWithAll);
 
 module.exports = heroRouter;

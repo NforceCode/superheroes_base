@@ -1,5 +1,6 @@
-const { Superhero, SuperheroImage } = require('../models');
+const { Superhero, Superpower , SuperheroImage } = require('../models');
 const createError = require('http-errors');
+const _ = require('lodash');
 
 module.exports.createSuperhero = async (req, res, next) => {
   try {
@@ -130,11 +131,9 @@ module.exports.addHeroWithImages = async(req, res, next) => {
      if(!newHero) {
        return(next(createError(404, "Hero not created")));
      }
-
-     const imageNames = files.map(file => {return {address: file.filename, heroId: newHero.id}});
-     console.log(imageNames);
-
-     const images = await SuperheroImage.bulkCreate(imageNames);
+     
+    const imageNames = files.map(file => {return {address: file.filename, heroId: newHero.id}});
+    const images = await SuperheroImage.bulkCreate(imageNames);
 
     if (!images) {
       return next(createError(404, 'Error while creating image'));
@@ -145,3 +144,36 @@ module.exports.addHeroWithImages = async(req, res, next) => {
     next(err);
   }
 };
+
+module.exports.createWithAll = async (req, res ,next) => {
+  try {
+    const {
+      body,
+      files
+    } = req;
+    console.log(body);
+
+    const heroBody = _.pick(body, ['nickname', 'realName', 'originDescription', 'catchPhrase',]);
+
+    const newHero = await Superhero.create(heroBody);
+    if(!newHero) {
+      return(next(createError(404, "Hero not created")));
+    }
+
+    const superpowersArray = body.superpowers.map(power => {return{name : power}});
+
+    const superpowers = await Superpower.bulkCreate(superpowersArray);
+
+
+    const imageNames = files.map(file => {return {address: file.filename, heroId: newHero.id}});
+    const images = await SuperheroImage.bulkCreate(imageNames);
+
+    if (!images) {
+      return next(createError(404, 'Error while creating image'));
+    }
+
+    res.send(superpowersArray);
+  } catch (err) {
+    next(err);
+  }
+}
