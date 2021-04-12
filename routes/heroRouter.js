@@ -3,6 +3,7 @@ const HeroController = require('../controllers/superhero.controller');
 const pagination = require('../middlewares/pagination.mw');
 const upload = require('../middlewares/multer.mw');
 const imageRouter = require('./imageRouter');
+const {findHero} = require('../middlewares/superhero.mw');
 const heroRouter = Router();
 
 heroRouter.post('/', upload.array('images', 10), HeroController.createSuperhero);
@@ -11,5 +12,5 @@ heroRouter.get('/:id', HeroController.getSuperhero);
 heroRouter.patch('/:id',upload.array('images', 10), HeroController.updateSuperhero);
 heroRouter.delete('/:id', HeroController.deleteSuperhero);
 
-heroRouter.use('/:heroId/images', imageRouter);
+heroRouter.use('/:heroId/images',findHero, imageRouter);
 module.exports = heroRouter;
