@@ -16,8 +16,8 @@ module.exports = {
           model: 'superheroes',
           key: 'id'
         },
-        OnDelete: 'cascade',
-        OnUpdate: 'cascade'
+        onDelete: 'cascade',
+        onUpdate: 'cascade'
       },
       address: {
         allowNull: false,
