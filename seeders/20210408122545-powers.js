@@ -14,7 +14,7 @@ const powers = [
     updated_at: new Date()
   },
   {
-    name: 'San go to sleep before 1am',
+    name: 'Can go to bed before 1am',
     created_at: new Date(),
     updated_at: new Date()
   },
@@ -28,7 +28,7 @@ module.exports = {
     await queryInterface.bulkDelete(
       'superpowers',
       {
-        nickname: { [Op.in]: powers.map(hero => hero.nickname) }
+        name: { [Op.in]: powers.map(power => power.name) }
       },
       {}
     );
