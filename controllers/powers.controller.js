@@ -6,20 +6,21 @@ module.exports.createPower = async (req, res, next) => {
     const {
       body: { heroId, name }
     } = req;
-
-    const hero = await Superhero.findByPk(heroId);
-
-    if (!hero) {
-      return next(createError(404, 'Superhero not found'));
-    }
-
+    
     const power = await Superpower.create({ name });
-
+    
     if (!power) {
-      return next(createError(404, 'Power not created'));
+      return next(createError(400, 'Power not created'));
     }
-
-    await power.addSuperhero(hero);
+    
+    if(heroId) {
+      const hero = await Superhero.findByPk(heroId);
+  
+      if (!hero) {
+        return next(createError(404, 'Superhero not found'));
+      }
+      await power.addSuperhero(hero);
+    }
 
     res.status(201).send({ data: power });
   } catch (err) {
@@ -29,22 +30,23 @@ module.exports.createPower = async (req, res, next) => {
 
 module.exports.bulkCreatePowers = async (req, res, next) => {
   try {
-    const { body: {powers, heroId} } = req;
-
-    const hero = await Superhero.findByPk(heroId);
-
-    if (!hero) {
-      return next(createError(404, 'Superhero not found'));
-    }
-
-    const createdpowers = await Superpower.bulkCreate(powers);
-
+    const { body: {superpowers, heroId} } = req;
+    
+    const createdpowers = await Superpower.bulkCreate(superpowers);
+    
     if(!createdpowers.length) {
       return (next(createError(400, "Superpowers not created")))
     }
-
     
-    await hero.addSuperpowers(createdpowers);
+    if(heroId) {
+      const hero = await Superhero.findByPk(heroId);
+  
+      if (!hero) {
+        return next(createError(404, 'Superhero not found'));
+      }
+      
+      await hero.addSuperpowers(createdpowers);
+    }
 
     res.status(201).send({data: createdpowers});
   } catch (err) {
@@ -52,104 +54,18 @@ module.exports.bulkCreatePowers = async (req, res, next) => {
   }
 };
 
-module.exports.addPowerToHero = async (req, res, next) => {
-  try {
-    const {
-      params: { powerId, heroId }
-    } = req;
-
-    const hero = await Superhero.findByPk(heroId);
-
-    if (!hero) {
-      return next(createError(404, 'Superhero not found'));
-    }
-
-    const power = await Superpower.findByPk(powerId);
-
-    if (!power) {
-      return next(createError(404, 'Power not found'));
-    }
-
-    await power.addSuperhero(hero);
-
-    res.status(200).send({ data: power });
-  } catch (err) {
-    next(err);
-  }
-};
-
-module.exports.bulkAddPowersToHero = async(req, res ,next) => {
-  try {
-    const {
-      params: { heroId },
-      body: {powers}
-    } = req;
-
-
-    const hero = await Superhero.findByPk(heroId);
-    if (!hero) {
-      return next(createError(404, 'Superhero not found'));
-    }
-
-    const heroReborn = await hero.addSuperpowers(powers);
-
-    res.status(200).send({ data: heroReborn });
-  } catch (err) {
-    next(err);
-  }
-}
-
-module.exports.getPower = async (req, res, next) => {
-  try {
-    const {
-      params: { powerId }
-    } = req;
-
-    const power = await Superpower.findByPk(powerId);
-
-    if (!power) {
-      return next(createError(404, 'Superpower not found'));
-    }
-
-    res.status(200).send({ data: power });
-  } catch (err) {
-    next(err);
-  }
-};
-
 module.exports.getPowers = async (req, res, next) => {
   try {
-    const powers = await Superpower.findAll();
+    const {pagination} = req;
+    const powers = await Superpower.findAll({
+      ...pagination
+    });
 
     if (!powers.length) {
       return next(createError(404, 'Superpowers not found'));
     }
 
     res.status(200).send({ data: powers });
-  } catch (err) {
-    next(err);
-  }
-};
-
-module.exports.changePower = async (req, res, next) => {
-  try {
-    const {
-      body,
-      params: { powerId }
-    } = req;
-
-    const [rows, [power]] = await Superpower.update(body, {
-      where: {
-        id: powerId
-      },
-      returning: true
-    });
-
-    if (rows !== 1) {
-      return next(createError(404, 'Power not found'));
-    }
-
-    res.status(200).send({ data: power });
   } catch (err) {
     next(err);
   }

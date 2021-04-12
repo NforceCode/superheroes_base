@@ -18,25 +18,7 @@ module.exports.addHeroImage = async (req, res, next) => {
       return next(createError(404, 'Error while creating image'));
     }
 
-    res.status(200).send({ data: image });
-  } catch (err) {
-    next(err);
-  }
-};
-
-module.exports.getImage = async (req, res, next) => {
-  try {
-    const {
-      params: { id }
-    } = req;
-
-    const image = await SuperheroImage.findByPk(id);
-
-    if (!image) {
-      return next(createError(404, 'Image not found'));
-    }
-
-    res.status(200).send({ data: image });
+    res.status(201).send({ data: image });
   } catch (err) {
     next(err);
   }
@@ -45,15 +27,13 @@ module.exports.getImage = async (req, res, next) => {
 module.exports.getAllHeroImages = async (req, res, next) => {
   try {
     const {
-      params: { heroId }
+      hero
     } = req;
 
-    const heroImages = await SuperheroImage.findAll({
-      where: { heroId }
-    });
+    const heroImages = await hero.getSuperheroImages();
 
     if (!heroImages.length) {
-      return next(createError(404, 'Image not found'));
+      return next(createError(404, 'Images not found'));
     }
 
     res.status(200).send({ data: heroImages });
@@ -62,13 +42,19 @@ module.exports.getAllHeroImages = async (req, res, next) => {
   }
 };
 
-module.exports.deleteImage = async (req, res, next) => {
+module.exports.deleteHeroImage = async (req, res, next) => {
   try {
     const {
-      params: { id }
+      params: { id },
+      hero
     } = req;
 
-    const rows = await SuperheroImage.destroy({ where: { id } });
+    const rows = await SuperheroImage.destroy({
+       where: {
+          id,
+          heroId: hero.id 
+        } 
+      });
 
     if (rows !== 1) {
       return next(createError(404, 'Image not found'));
@@ -83,10 +69,10 @@ module.exports.deleteImage = async (req, res, next) => {
 module.exports.deleteAllHeroImages = async (req, res, next) => {
   try {
     const {
-      params: { heroId }
+      hero
     } = req;
 
-    const deletedRows = await SuperheroImage.destroy({ where: { heroId } });
+    const deletedRows = await SuperheroImage.destroy({ where: { heroId: hero.id } });
 
     if (deletedRows === 0) {
       return next(createError(404, 'No images of such hero'));
