@@ -18,8 +18,8 @@ module.exports = {
           key: 'id'
         },
 
-        OnDelete: 'cascade',
-        OnUpdate: 'cascade'
+        onDelete: 'cascade',
+        onUpdate: 'cascade'
       },
       powerId: {
         field: 'power_id',
