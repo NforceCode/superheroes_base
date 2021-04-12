@@ -5,8 +5,8 @@ module.exports = async (req, res, next) => {
     } = req;
 
     req.pagination = {
-      limit: limit > 0 || limit < 50 ? limit : 10,
-      offset: offset >= 0 ? offset : 0
+      limit: !isNaN(Number(limit)) && (limit > 0 || limit < 5) ? limit : 5,
+      offset: !isNaN(Number(offset)) && offset >= 0 ? offset : 0
     };
 
     next();
