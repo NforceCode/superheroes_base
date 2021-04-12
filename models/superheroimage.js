@@ -9,7 +9,10 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate (models) {
       SuperheroImage.belongsTo(models.Superhero, {
-        foreignKey: 'heroId'
+        foreignKey: 'heroId',
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+        hooks: true
       });
     }
   }

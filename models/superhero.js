@@ -13,7 +13,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'heroId'
       });
       Superhero.hasMany(models.SuperheroImage, {
-        foreignKey: 'heroId'
+        foreignKey: 'heroId',
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+        hooks: true
       });
     }
   }
