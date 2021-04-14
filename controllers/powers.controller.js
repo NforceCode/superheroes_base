@@ -1,5 +1,5 @@
 const createError = require('http-errors');
-const { Superpower, Superhero } = require('../models');
+const { Superpower, Superhero } = require('../db/models');
 
 module.exports.createPower = async (req, res, next) => {
   try {

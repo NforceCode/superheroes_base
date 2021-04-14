@@ -1,4 +1,4 @@
-const { Superhero, SuperheroImage } = require('../models/');
+const { SuperheroImage } = require('../db/models/');
 const createError = require('http-errors');
 
 // добавлять, читать, удалять
@@ -26,9 +26,7 @@ module.exports.addHeroImage = async (req, res, next) => {
 
 module.exports.getAllHeroImages = async (req, res, next) => {
   try {
-    const {
-      hero
-    } = req;
+    const { hero } = req;
 
     const heroImages = await hero.getSuperheroImages();
 
@@ -50,11 +48,11 @@ module.exports.deleteHeroImage = async (req, res, next) => {
     } = req;
 
     const rows = await SuperheroImage.destroy({
-       where: {
-          id,
-          heroId: hero.id 
-        } 
-      });
+      where: {
+        id,
+        heroId: hero.id
+      }
+    });
 
     if (rows !== 1) {
       return next(createError(404, 'Image not found'));
@@ -68,11 +66,11 @@ module.exports.deleteHeroImage = async (req, res, next) => {
 
 module.exports.deleteAllHeroImages = async (req, res, next) => {
   try {
-    const {
-      hero
-    } = req;
+    const { hero } = req;
 
-    const deletedRows = await SuperheroImage.destroy({ where: { heroId: hero.id } });
+    const deletedRows = await SuperheroImage.destroy({
+      where: { heroId: hero.id }
+    });
 
     if (deletedRows === 0) {
       return next(createError(404, 'No images of such hero'));

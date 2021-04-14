@@ -1,4 +1,4 @@
-const { Superhero, Superpower, SuperheroImage } = require('../models');
+const { Superhero, Superpower, SuperheroImage } = require('../db/models');
 const createError = require('http-errors');
 const _ = require('lodash');
 const { Op } = require('sequelize');
@@ -212,7 +212,7 @@ module.exports.updateSuperhero = async (req, res, next) => {
         }
       });
 
-      if(existingPowers.length) {
+      if (existingPowers.length) {
         await hero.setSuperpowers(existingPowers);
       }
 
@@ -225,7 +225,6 @@ module.exports.updateSuperhero = async (req, res, next) => {
       );
 
       if (body.superpowers.length) {
-        
         const newPowers = await Superpower.bulkCreate(
           body.superpowers.map(power => {
             return { name: power };
@@ -236,7 +235,7 @@ module.exports.updateSuperhero = async (req, res, next) => {
           return next(createError(400, 'Cant create new powers'));
         }
 
-        if(!existingPowers.length) {
+        if (!existingPowers.length) {
           await hero.setSuperpowers(newPowers);
         } else {
           await hero.addSuperpowers(newPowers);
