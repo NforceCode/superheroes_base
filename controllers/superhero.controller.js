@@ -7,6 +7,21 @@ module.exports.createSuperhero = async (req, res, next) => {
   try {
     const { body, files } = req;
 
+    // выбираем из body запчасти героя
+    const heroBody = _.pick(body, [
+      'nickname',
+      'realName',
+      'originDescription',
+      'catchPhrase',
+    ]);
+
+    const newHero = await Superhero.create(heroBody);
+    if (!newHero) {
+      return next(createError(404, 'Hero not created'));
+    }
+
+    // Прикручиваем суперсилы
+    // Проверка что силы вообще дали
     if (_.isEmpty(body.superpowers)) {
       return next(createError(400, 'Superpowers not provided'));
     }
@@ -20,8 +35,8 @@ module.exports.createSuperhero = async (req, res, next) => {
     // Суперсилы, которые уже есть в базе
     const dbpowers = await Superpower.findAll({
       where: {
-        name: { [Op.in]: body.superpowers }
-      }
+        name: { [Op.in]: body.superpowers },
+      },
     });
 
     // Массив со строками имен суперсил, которые есть в базе
@@ -33,19 +48,6 @@ module.exports.createSuperhero = async (req, res, next) => {
     body.superpowers = body.superpowers.filter(
       power => !existingPowers.includes(power)
     );
-
-    // выбираем из body запчасти героя
-    const heroBody = _.pick(body, [
-      'nickname',
-      'realName',
-      'originDescription',
-      'catchPhrase'
-    ]);
-
-    const newHero = await Superhero.create(heroBody);
-    if (!newHero) {
-      return next(createError(404, 'Hero not created'));
-    }
 
     if (dbpowers) {
       await newHero.addSuperpowers(dbpowers);
@@ -65,13 +67,13 @@ module.exports.createSuperhero = async (req, res, next) => {
       await newHero.addSuperpowers(createdSuperpowers);
     }
 
+    // Прикручиваем картинки, если их дали
     if (!_.isEmpty(files)) {
       const imageNames = files.map(file => {
         return { address: file.filename, heroId: newHero.id };
       });
       const images = await SuperheroImage.bulkCreate(imageNames);
 
-      // Проверка что картинки не создались хотя в файлах что-то прилетало
       if (!images) {
         return next(createError(404, 'Error while creating image'));
       }
@@ -81,14 +83,14 @@ module.exports.createSuperhero = async (req, res, next) => {
       include: [
         {
           model: SuperheroImage,
-          attributes: [['address', 'image name']]
+          attributes: [['address', 'image name']],
         },
         {
           model: Superpower,
           name: [['name', 'superpower']],
-          through: { attributes: [] }
-        }
-      ]
+          through: { attributes: [] },
+        },
+      ],
     });
 
     res.send({ data: assembledHero });
@@ -100,7 +102,7 @@ module.exports.createSuperhero = async (req, res, next) => {
 module.exports.getSuperhero = async (req, res, next) => {
   try {
     const {
-      params: { id }
+      params: { id },
     } = req;
 
     const superhero = await Superhero.findByPk(id, {
@@ -109,14 +111,14 @@ module.exports.getSuperhero = async (req, res, next) => {
           model: Superpower,
           attributes: [['name', 'superpower']],
           through: {
-            attributes: []
-          }
+            attributes: [],
+          },
         },
         {
           model: SuperheroImage,
-          attributes: [['address', 'image name']]
-        }
-      ]
+          attributes: [['address', 'image name']],
+        },
+      ],
     });
 
     if (!superhero) {
@@ -138,16 +140,17 @@ module.exports.getSuperheroes = async (req, res, next) => {
       include: [
         {
           model: SuperheroImage,
-          attributes: [['address', 'image name']]
+          attributes: [['address', 'image name']],
         },
         {
           model: Superpower,
           attributes: [['name', 'superpower']],
           through: {
-            attributes: []
-          }
-        }
-      ]
+            attributes: [],
+          },
+        },
+      ],
+      order: [['updated_at', 'DESC']]
     });
 
     if (!allHeroes.length) {
@@ -165,14 +168,14 @@ module.exports.updateSuperhero = async (req, res, next) => {
     const {
       body,
       params: { id },
-      files
+      files,
     } = req;
 
     const heroBody = _.pick(body, [
       'nickname',
       'realName',
       'originDescription',
-      'catchPhrase'
+      'catchPhrase',
     ]);
 
     const hero = await Superhero.findByPk(id);
@@ -182,25 +185,29 @@ module.exports.updateSuperhero = async (req, res, next) => {
     }
 
     if (!_.isEmpty(heroBody)) {
-      hero.update(heroBody);
+      await hero.update(heroBody);
     }
 
+    // Создание доп картинок
     if (!_.isEmpty(files)) {
-      await SuperheroImage.destroy({
-        where: { heroId: id }
-      });
+      // await SuperheroImage.destroy({
+      //   where: { heroId: id },
+      // });
 
       const images = await SuperheroImage.bulkCreate(
         files.map(file => {
-          return { address: file.filename, heroId: hero.id };
+          return { address: file.filename, heroId: id };
         })
       );
 
-      if (!images && !_.isEmpty(files)) {
+      if (!images) {
         return next(createError(404, 'Error while creating image'));
       }
     }
 
+    // Замена суперсил если они пришли
+    // Все старые суперсилы, которые не были заново введены отвяжутся от героя
+    // Потому что лицензия на полет закончилась
     if (!_.isEmpty(body.superpowers)) {
       if (typeof body.superpowers === 'string' && body.superpowers !== '') {
         body.superpowers = [body.superpowers];
@@ -208,8 +215,8 @@ module.exports.updateSuperhero = async (req, res, next) => {
 
       const existingPowers = await Superpower.findAll({
         where: {
-          name: { [Op.in]: body.superpowers }
-        }
+          name: { [Op.in]: body.superpowers },
+        },
       });
 
       if (existingPowers.length) {
@@ -247,16 +254,17 @@ module.exports.updateSuperhero = async (req, res, next) => {
       include: [
         {
           model: SuperheroImage,
-          attributes: [['address', 'image name']]
+          attributes: [['address', 'image name']],
         },
         {
           model: Superpower,
           attributes: [['name', 'superpower']],
-          through: { attributes: [] }
-        }
-      ]
+          through: { attributes: [] },
+        },
+      ],
     });
-    res.send(updatedHero);
+    
+    res.send({data: updatedHero});
   } catch (err) {
     next(err);
   }
@@ -265,7 +273,7 @@ module.exports.updateSuperhero = async (req, res, next) => {
 module.exports.deleteSuperhero = async (req, res, next) => {
   try {
     const {
-      params: { id }
+      params: { id },
     } = req;
 
     const deletedRows = await Superhero.destroy({ where: { id } });

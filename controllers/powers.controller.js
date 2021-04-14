@@ -13,6 +13,7 @@ module.exports.createPower = async (req, res, next) => {
       return next(createError(400, 'Power not created'));
     }
     
+    // Если в запросе есть id героя то сразу привязать суперсилы к нему
     if(heroId) {
       const hero = await Superhero.findByPk(heroId);
   
@@ -38,6 +39,7 @@ module.exports.bulkCreatePowers = async (req, res, next) => {
       return (next(createError(400, "Superpowers not created")))
     }
     
+    // Если в запросе есть id героя то сразу привязать суперсилы к нему
     if(heroId) {
       const hero = await Superhero.findByPk(heroId);
   

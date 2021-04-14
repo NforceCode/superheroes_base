@@ -1,8 +1,6 @@
 const { SuperheroImage } = require('../db/models/');
 const createError = require('http-errors');
 
-// добавлять, читать, удалять
-
 module.exports.addHeroImage = async (req, res, next) => {
   try {
     const {
@@ -40,6 +38,11 @@ module.exports.getAllHeroImages = async (req, res, next) => {
   }
 };
 
+/*
+  Учитывая что путь запроса .../api/superheroes/:heroId/images/:id 
+  не придумал как реализовывать по REST чисто удаление одной картинки
+  не создавать же чисто дял одной операции отдельную ручку
+*/
 module.exports.deleteHeroImage = async (req, res, next) => {
   try {
     const {
@@ -58,7 +61,7 @@ module.exports.deleteHeroImage = async (req, res, next) => {
       return next(createError(404, 'Image not found'));
     }
 
-    res.status(200).send({ data: 'Image deleted' });
+    res.status(200).send({ data: id });
   } catch (err) {
     next(err);
   }
