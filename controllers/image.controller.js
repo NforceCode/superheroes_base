@@ -38,11 +38,6 @@ module.exports.getAllHeroImages = async (req, res, next) => {
   }
 };
 
-/*
-  Учитывая что путь запроса .../api/superheroes/:heroId/images/:id 
-  не придумал как реализовывать по REST чисто удаление одной картинки
-  не создавать же чисто дял одной операции отдельную ручку
-*/
 module.exports.deleteHeroImage = async (req, res, next) => {
   try {
     const {

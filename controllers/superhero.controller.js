@@ -2,18 +2,17 @@ const { Superhero, Superpower, SuperheroImage } = require('../db/models');
 const createError = require('http-errors');
 const _ = require('lodash');
 const { Op } = require('sequelize');
+const {
+  filterBody,
+  includePicsAndPowers,
+} = require('../middlewares/superhero.mw');
 
 module.exports.createSuperhero = async (req, res, next) => {
   try {
     const { body, files } = req;
 
     // выбираем из body запчасти героя
-    const heroBody = _.pick(body, [
-      'nickname',
-      'realName',
-      'originDescription',
-      'catchPhrase',
-    ]);
+    const heroBody = filterBody(body);
 
     const newHero = await Superhero.create(heroBody);
     if (!newHero) {
@@ -106,19 +105,7 @@ module.exports.getSuperhero = async (req, res, next) => {
     } = req;
 
     const superhero = await Superhero.findByPk(id, {
-      include: [
-        {
-          model: Superpower,
-          attributes: [['name', 'superpower']],
-          through: {
-            attributes: [],
-          },
-        },
-        {
-          model: SuperheroImage,
-          attributes: [['address', 'image name']],
-        },
-      ],
+      ...includePicsAndPowers,
     });
 
     if (!superhero) {
@@ -137,20 +124,8 @@ module.exports.getSuperheroes = async (req, res, next) => {
 
     const allHeroes = await Superhero.findAll({
       ...pagination,
-      include: [
-        {
-          model: SuperheroImage,
-          attributes: [['address', 'image name']],
-        },
-        {
-          model: Superpower,
-          attributes: [['name', 'superpower']],
-          through: {
-            attributes: [],
-          },
-        },
-      ],
-      order: [['updated_at', 'DESC']]
+      ...includePicsAndPowers,
+      order: [['updated_at', 'DESC']],
     });
 
     if (!allHeroes.length) {
@@ -171,12 +146,7 @@ module.exports.updateSuperhero = async (req, res, next) => {
       files,
     } = req;
 
-    const heroBody = _.pick(body, [
-      'nickname',
-      'realName',
-      'originDescription',
-      'catchPhrase',
-    ]);
+    const heroBody = filterBody(body);
 
     const hero = await Superhero.findByPk(id);
 
@@ -251,20 +221,10 @@ module.exports.updateSuperhero = async (req, res, next) => {
     }
 
     const updatedHero = await Superhero.findByPk(id, {
-      include: [
-        {
-          model: SuperheroImage,
-          attributes: [['address', 'image name']],
-        },
-        {
-          model: Superpower,
-          attributes: [['name', 'superpower']],
-          through: { attributes: [] },
-        },
-      ],
+      ...includePicsAndPowers,
     });
-    
-    res.send({data: updatedHero});
+
+    res.send({ data: updatedHero });
   } catch (err) {
     next(err);
   }
