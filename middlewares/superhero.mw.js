@@ -1,6 +1,5 @@
 const { Superhero, Superpower, SuperheroImage } = require('../db/models');
 const createError = require('http-errors');
-const _ = require('lodash');
 
 module.exports.findHero = async (req, res, next) => {
   try {
@@ -18,23 +17,4 @@ module.exports.findHero = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-};
-
-module.exports.filterBody = body =>
-  _.pick(body, ['nickname', 'realName', 'originDescription', 'catchPhrase']);
-
-module.exports.includePicsAndPowers = {
-  include: [
-    {
-      model: SuperheroImage,
-      attributes: [['address', 'image name']],
-    },
-    {
-      model: Superpower,
-      attributes: [['name', 'superpower']],
-      through: {
-        attributes: [],
-      },
-    },
-  ],
 };

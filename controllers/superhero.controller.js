@@ -2,17 +2,29 @@ const { Superhero, Superpower, SuperheroImage } = require('../db/models');
 const createError = require('http-errors');
 const _ = require('lodash');
 const { Op } = require('sequelize');
-const {
-  filterBody,
-  includePicsAndPowers,
-} = require('../middlewares/superhero.mw');
+
+includePicsAndPowers = {
+  include: [
+    {
+      model: SuperheroImage,
+      attributes: [['address', 'image name']],
+    },
+    {
+      model: Superpower,
+      attributes: [['name', 'superpower']],
+      through: {
+        attributes: [],
+      },
+    },
+  ],
+};
 
 module.exports.createSuperhero = async (req, res, next) => {
   try {
     const { body, files } = req;
 
     // выбираем из body запчасти героя
-    const heroBody = filterBody(body);
+    const heroBody = _.pick(body, ['nickname', 'realName', 'originDescription', 'catchPhrase']);
 
     const newHero = await Superhero.create(heroBody);
     if (!newHero) {
@@ -79,17 +91,7 @@ module.exports.createSuperhero = async (req, res, next) => {
     }
 
     const assembledHero = await Superhero.findByPk(newHero.dataValues.id, {
-      include: [
-        {
-          model: SuperheroImage,
-          attributes: [['address', 'image name']],
-        },
-        {
-          model: Superpower,
-          name: [['name', 'superpower']],
-          through: { attributes: [] },
-        },
-      ],
+      ...includePicsAndPowers,
     });
 
     res.send({ data: assembledHero });
@@ -146,7 +148,7 @@ module.exports.updateSuperhero = async (req, res, next) => {
       files,
     } = req;
 
-    const heroBody = filterBody(body);
+    const heroBody = _.pick(body, ['nickname', 'realName', 'originDescription', 'catchPhrase']);
 
     const hero = await Superhero.findByPk(id);
 
